@@ -1,0 +1,27 @@
+[
+  {
+    "id": "piano-trainer",
+    "title": "Piano Trainer",
+    "description": "Web app that teaches piano fundamentals with interactive MIDI keyboard.",
+    "tags": ["web", "music", "education"],
+    "year": 2024,
+    "repoUrl": "https://github.com/example/piano-trainer",
+    "liveUrl": "https://piano.example.com"
+  },
+  {
+    "id": "design-system",
+    "title": "Design System",
+    "description": "Reusable component library and token-driven theming system.",
+    "tags": ["ui", "design", "library"],
+    "year": 2025,
+    "repoUrl": "https://github.com/example/design-system"
+  },
+  {
+    "id": "arcade-shooter",
+    "title": "Arcade Shooter",
+    "description": "Retro-inspired browser game with procedural enemy waves.",
+    "tags": ["game", "canvas"],
+    "year": 2023,
+    "liveUrl": "https://games.example.com/arcade-shooter"
+  }
+]

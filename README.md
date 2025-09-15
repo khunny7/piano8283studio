@@ -1,0 +1,68 @@
+# Personal Portfolio & Blog (React + Vite)
+
+This project is a personal portfolio and blog site built with **React**, **TypeScript**, and **Vite**. It will showcase projects (apps, services, games, designs) and provide a simple MDX-powered blog section for articles.
+
+## Planned Features
+- Portfolio project listing & filters
+- Individual project detail pages
+- MDX blog with tagging
+- Dark / Light theme toggle
+- Firebase Hosting deployment
+- Sitemap generation & basic SEO
+
+## Tech Stack
+- React 18 + TypeScript
+- Vite 5
+- React Router (to be added)
+- MDX via `@mdx-js/react` + Vite plugin (to be added)
+- Firebase Hosting
+
+## Development
+Install dependencies:
+```bash
+npm install
+```
+Run dev server:
+```bash
+npm run dev
+```
+Build production bundle:
+```bash
+npm run build
+```
+Preview production build:
+```bash
+npm run preview
+```
+
+## Firebase (Upcoming)
+A `firebase.json` and deployment instructions will be added. Expected steps:
+```bash
+npm install firebase-tools -g
+firebase login
+firebase init hosting
+firebase deploy
+```
+
+## Continuous Deployment (GitHub Actions)
+
+This project supports automatic deployment to Firebase Hosting via GitHub Actions.
+
+### Setup Steps
+1. Generate a Firebase CI token:
+   ```powershell
+   firebase login:ci
+   ```
+   Copy the token output.
+2. Go to your GitHub repo → Settings → Secrets → Actions → New repository secret.
+   - Name: `FIREBASE_TOKEN`
+   - Value: (paste your token)
+3. Push to `main` branch. The workflow in `.github/workflows/deploy.yml` will build and deploy automatically.
+
+See `.github/workflows/deploy.yml` for details.
+
+## Environment Variables
+Create a `.env` (or `.env.local`) file for any Firebase keys once added.
+
+## License
+You can choose a license later (MIT recommended for portfolio content). Placeholder for now.
