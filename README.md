@@ -91,6 +91,16 @@ expires: 7d
 
 Let me know if you’d like that added.
 
+### Authentication Modes
+The workflow attempts deployment in this order:
+1. Service Account (`FIREBASE_SERVICE_ACCOUNT`) – preferred.
+2. Legacy Token (`FIREBASE_TOKEN`) – fallback (deprecated by Firebase).
+3. Fails with an instructive message if neither secret exists.
+
+Secrets required:
+- `FIREBASE_SERVICE_ACCOUNT`: JSON of a service account with Firebase Hosting Admin.
+- `FIREBASE_TOKEN` (optional): Output from `firebase login:ci`.
+
 ## Environment Variables
 Create a `.env` (or `.env.local`) file for any Firebase keys once added.
 
