@@ -5,7 +5,7 @@ import { UserRole, ROLE_PERMISSIONS, Permission } from '../types/user';
 // Add your email here to become the first admin, then remove it after setup
 export const BOOTSTRAP_ADMIN_EMAILS: string[] = [
   // Add your email here to bootstrap the first admin:
-  // 'your-email@gmail.com',
+  'khunny7@gmail.com'
 ];
 
 // Database-driven admin checking with bootstrap fallback

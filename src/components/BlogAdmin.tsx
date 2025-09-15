@@ -114,9 +114,6 @@ export function BlogAdmin() {
       <div style={{ border: '1px solid #aaa', padding: 16, borderRadius: 8, marginTop: 24 }}>
         <h3>Blog Admin</h3>
         <p>Access denied. Admin privileges required to manage blog posts.</p>
-        <p style={{ fontSize: '0.9rem', color: '#666' }}>
-          Current user: {user.displayName} ({user.email})
-        </p>
       </div>
     );
   }

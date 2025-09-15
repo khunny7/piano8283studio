@@ -3,6 +3,7 @@ import { User, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/aut
 import { auth, googleProvider } from '../firebase';
 import { UserService } from '../services/userService';
 import { UserProfile } from '../types/user';
+import { DebugUtils } from '../utils/debug';
 
 interface AuthContextType {
   user: User | null;
@@ -50,15 +51,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      DebugUtils.log('Auth state changed:', user ? `User: ${user.email}` : 'User signed out');
       setUser(user);
       
       if (user) {
         // Create or update user profile when user signs in
         try {
+          DebugUtils.log('Calling createOrUpdateUserProfile...');
           const profile = await UserService.createOrUpdateUserProfile(user);
+          DebugUtils.log('User profile created/updated:', profile);
           setUserProfile(profile);
         } catch (error) {
-          console.error('Error creating/updating user profile:', error);
+          DebugUtils.logError('Error creating/updating user profile:', error);
           setUserProfile(null);
         }
       } else {

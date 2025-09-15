@@ -3,12 +3,10 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Home from './routes/Home';
 import Portfolio from './routes/Portfolio';
 import Blog from './routes/Blog';
+import Admin from './routes/Admin';
 import NotFound from './routes/NotFound';
 import { ThemeToggle } from './components/layout/ThemeToggle';
 import { HeaderAuth } from './components/layout/HeaderAuth';
-import { FirestoreDemo } from './components/FirestoreDemo';
-import { BlogAdmin } from './components/BlogAdmin';
-import { UserManagement } from './components/UserManagement';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -31,11 +29,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <FirestoreDemo />
-          <BlogAdmin />
-          <UserManagement />
         </div>
       </BrowserRouter>
     </AuthProvider>

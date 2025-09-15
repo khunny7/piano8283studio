@@ -1,18 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { posts } from '../blog';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { isUserAdminSync } from '../utils/permissions';
-
-interface LoadedPostMeta {
-  slug?: string;
-  title?: string;
-  summary?: string;
-  published?: string;
-  tags?: string[];
-  default: React.ComponentType<any>;
-}
 
 interface FirestoreBlogPost {
   id: string;
@@ -29,22 +19,12 @@ interface FirestoreBlogPost {
 
 export default function Blog() {
   const { user, userProfile } = useAuth();
-  const [loaded, setLoaded] = useState<LoadedPostMeta[]>([]);
-  const [active, setActive] = useState<LoadedPostMeta | null>(null);
   const [firestorePosts, setFirestorePosts] = useState<FirestoreBlogPost[]>([]);
   const [selectedFirestorePost, setSelectedFirestorePost] = useState<FirestoreBlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load MDX posts
-    Promise.all(posts.map(fn => fn())).then(mods => {
-      const metas = mods.map(m => m as unknown as LoadedPostMeta);
-      setLoaded(metas);
-    }).catch(err => {
-      console.error('Error loading MDX posts:', err);
-    });
-
     // Load Firestore posts
     fetchFirestorePosts();
   }, [userProfile]); // Re-fetch when user profile changes
@@ -175,30 +155,6 @@ export default function Blog() {
           </div>
         )}
       </section>
-
-      {/* MDX Posts Section */}
-      {loaded.length > 0 && (
-        <section>
-          <h2>Archive (MDX Posts)</h2>
-          <p>Select a post to view inline (temporary simple renderer).</p>
-          <ul>
-            {loaded.map((mod, index) => (
-              <li key={mod.slug || mod.title || `mdx-post-${index}`}>
-                <button onClick={() => setActive(mod)} style={{ cursor: 'pointer' }}>
-                  {mod.title || mod.slug || `Post ${index + 1}`}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <hr />
-          {active && (
-            <div style={{ padding: '1rem', border: '1px solid #ddd', borderRadius: 8 }}>
-              <h2>{active.title}</h2>
-              <active.default />
-            </div>
-          )}
-        </section>
-      )}
     </div>
   );
 }

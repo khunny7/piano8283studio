@@ -1,10 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { isUserAdminSync } from '../../utils/permissions';
 
 export const HeaderAuth: React.FC = () => {
   const { user, userProfile, loading, signInWithGoogle, logout } = useAuth();
-  const userIsAdmin = isUserAdminSync(userProfile?.role || null);
+  const userIsAdmin = isUserAdminSync(userProfile?.role || null, user?.email);
 
   if (loading) {
     return <div style={{ fontSize: '0.9rem', color: '#666' }}>Loading...</div>;
@@ -27,6 +28,21 @@ export const HeaderAuth: React.FC = () => {
               {userIsAdmin && <span style={{ color: '#28a745', fontWeight: 'bold', marginLeft: '4px' }}>(Admin)</span>}
             </span>
           </div>
+          {userIsAdmin && (
+            <Link 
+              to="/admin" 
+              style={{ 
+                padding: '0.25rem 0.5rem', 
+                fontSize: '0.8rem',
+                backgroundColor: '#007bff', 
+                color: 'white', 
+                textDecoration: 'none', 
+                borderRadius: '4px'
+              }}
+            >
+              Admin
+            </Link>
+          )}
           <button 
             onClick={logout}
             style={{ 

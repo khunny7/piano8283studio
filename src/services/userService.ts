@@ -2,18 +2,26 @@ import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, serv
 import { User } from 'firebase/auth';
 import { db } from '../firebase';
 import { UserProfile, UserRole, DEFAULT_USER_ROLE } from '../types/user';
+import { DebugUtils } from '../utils/debug';
 
 export class UserService {
   private static readonly COLLECTION_NAME = 'users';
 
   // Create or update user profile on sign-in
   static async createOrUpdateUserProfile(user: User): Promise<UserProfile> {
+    DebugUtils.log('createOrUpdateUserProfile called for user:', {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName
+    });
+
     const userRef = doc(db, this.COLLECTION_NAME, user.uid);
     const userSnap = await getDoc(userRef);
 
     const now = new Date();
     
     if (userSnap.exists()) {
+      DebugUtils.log('User exists, updating profile...');
       // Update existing user's last login
       const userData = userSnap.data() as UserProfile;
       await updateDoc(userRef, {
@@ -25,6 +33,7 @@ export class UserService {
         email: user.email
       });
       
+      DebugUtils.log('Updated existing user profile');
       return {
         ...userData,
         lastLoginAt: now,
@@ -34,6 +43,7 @@ export class UserService {
         email: user.email || userData.email
       };
     } else {
+      DebugUtils.log('Creating new user profile...');
       // Create new user profile with default role
       const newUserProfile: UserProfile = {
         uid: user.uid,
@@ -46,6 +56,7 @@ export class UserService {
         lastLoginAt: now
       };
 
+      DebugUtils.log('Saving new user profile to Firestore...', newUserProfile);
       await setDoc(userRef, {
         ...newUserProfile,
         createdAt: serverTimestamp(),
@@ -53,6 +64,7 @@ export class UserService {
         lastLoginAt: serverTimestamp()
       });
 
+      DebugUtils.log('Created new user profile successfully');
       return newUserProfile;
     }
   }
@@ -91,15 +103,25 @@ export class UserService {
   // Get all users (admin only)
   static async getAllUsers(): Promise<UserProfile[]> {
     try {
+      DebugUtils.log('Getting all users from Firestore...');
       const usersQuery = query(collection(db, this.COLLECTION_NAME));
       const querySnapshot = await getDocs(usersQuery);
       
-      return querySnapshot.docs.map(doc => ({
-        uid: doc.id,
-        ...doc.data()
-      } as UserProfile));
+      DebugUtils.log('Query returned', querySnapshot.docs.length, 'documents');
+      
+      const users = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        DebugUtils.log('User document:', doc.id, data);
+        return {
+          uid: doc.id,
+          ...data
+        } as UserProfile;
+      });
+      
+      DebugUtils.log('Processed users:', users);
+      return users;
     } catch (error) {
-      console.error('Error fetching users:', error);
+      DebugUtils.logError('Error fetching users:', error);
       return [];
     }
   }

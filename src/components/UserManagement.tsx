@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { UserService } from '../services/userService';
 import { UserProfile, UserRole } from '../types/user';
 import { isUserAdminSync } from '../utils/permissions';
+import { DebugUtils } from '../utils/debug';
 
 export const UserManagement: React.FC = () => {
   const { user, userProfile } = useAuth();
@@ -11,6 +12,7 @@ export const UserManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const userIsAdmin = isUserAdminSync(userProfile?.role || null, user?.email);
+  const isDebugMode = DebugUtils.isDebugMode();
 
   useEffect(() => {
     if (userIsAdmin) {
@@ -49,6 +51,7 @@ export const UserManagement: React.FC = () => {
     }
   };
 
+  // Show access denied message on admin route (better than returning null)
   if (!userIsAdmin) {
     return (
       <div style={{ border: '1px solid #aaa', padding: 16, borderRadius: 8, marginTop: 24 }}>
@@ -60,7 +63,22 @@ export const UserManagement: React.FC = () => {
 
   return (
     <div style={{ border: '1px solid #aaa', padding: 16, borderRadius: 8, marginTop: 24 }}>
-      <h3>User Management</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <h3 style={{ margin: 0 }}>User Management</h3>
+        {isDebugMode && (
+          <span style={{ 
+            backgroundColor: '#fff3cd', 
+            color: '#856404', 
+            padding: '4px 8px', 
+            borderRadius: 4, 
+            fontSize: '0.8rem',
+            border: '1px solid #ffeaa7'
+          }}>
+            🐛 Debug Mode
+          </span>
+        )}
+      </div>
+      
       <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: 16 }}>
         Manage user roles and permissions
       </p>
