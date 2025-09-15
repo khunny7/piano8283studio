@@ -102,7 +102,49 @@ Secrets required:
 - `FIREBASE_TOKEN` (optional): Output from `firebase login:ci`.
 
 ## Environment Variables
-Create a `.env` (or `.env.local`) file for any Firebase keys once added.
+Create a `.env.local` file for Firebase configuration:
+
+```bash
+# Copy from .env.example and fill in your Firebase project configuration
+cp .env.example .env.local
+```
+
+Required environment variables:
+```bash
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
+```
+
+## Firebase Setup
+
+This project uses Firebase for hosting and Firestore for the blog backend.
+
+### Getting Firebase Configuration
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select your project
+3. Go to Project Settings → General → Your apps
+4. Copy the config values to `.env.local`
+
+### Database Setup
+Firestore is configured with security rules in `firestore.rules`. Current rules allow full access for development.
+
+**⚠️ Important**: Before going to production, update the security rules to require authentication for write operations.
+
+### Available Components
+- `FirestoreDemo`: Test component for reading/writing data
+- `BlogAdmin`: CRUD interface for managing blog posts
+
+### Local Development
+1. Ensure `.env.local` is configured with your Firebase credentials
+2. Run `npm run dev`
+3. Visit the app to test Firebase connectivity
+
+### Deployment
+Firebase rules and hosting are automatically deployed via GitHub Actions when pushing to main branch.
 
 ## License
 You can choose a license later (MIT recommended for portfolio content). Placeholder for now.
