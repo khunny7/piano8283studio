@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "piano8283-a9aca",
     "public": "dist",
     "ignore": [
       "firebase.json",

@@ -61,6 +61,36 @@ This project supports automatic deployment to Firebase Hosting via GitHub Action
 
 See `.github/workflows/deploy.yml` for details.
 
+## CI/CD (Updated Secure Deployment)
+
+The GitHub Action now uses a **Firebase service account** instead of the deprecated `FIREBASE_TOKEN`.
+
+### Create Service Account JSON
+1. Go to Google Cloud Console → IAM & Admin → Service Accounts.
+2. Create account (or reuse) with role: `Firebase Hosting Admin` (or minimally: `Firebase Hosting Admin` + `Viewer`).
+3. Add key → JSON → download.
+4. Base64 encode the JSON (optional) OR paste raw JSON as secret value.
+
+### Add Secret to GitHub
+- Go to: Repository Settings → Secrets and variables → Actions → New repository secret
+- Name: `FIREBASE_SERVICE_ACCOUNT`
+- Value: Paste full JSON contents
+
+### Workflow Behavior
+- Builds on push to `main`.
+- Generates sitemap (`npm run sitemap`).
+- Deploys to the live channel of project `piano8283-a9aca`.
+- (Optional) For previews, we can add a PR workflow using a `channelId` based on the PR number.
+
+### Example Preview Enhancement (Future)
+Add another job (or convert) with:
+```
+channelId: pr-${{ github.event.pull_request.number }}
+expires: 7d
+```
+
+Let me know if you’d like that added.
+
 ## Environment Variables
 Create a `.env` (or `.env.local`) file for any Firebase keys once added.
 
