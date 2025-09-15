@@ -5,12 +5,12 @@ import { UserProfile, UserRole } from '../types/user';
 import { isUserAdminSync } from '../utils/permissions';
 
 export const UserManagement: React.FC = () => {
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const userIsAdmin = isUserAdminSync(userProfile?.role || null);
+  const userIsAdmin = isUserAdminSync(userProfile?.role || null, user?.email);
 
   useEffect(() => {
     if (userIsAdmin) {

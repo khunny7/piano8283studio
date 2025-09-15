@@ -110,8 +110,21 @@ export class UserService {
     return userProfile?.role === role || false;
   }
 
-  // Check if user is admin
+  // Check if user is admin (with bootstrap fallback)
   static async isAdmin(uid: string): Promise<boolean> {
-    return this.hasRole(uid, 'admin');
+    const userProfile = await this.getUserProfile(uid);
+    
+    // First check database role
+    if (userProfile?.role === 'admin') {
+      return true;
+    }
+    
+    // Bootstrap fallback: if no role is set and email is in bootstrap list
+    if (!userProfile?.role && userProfile?.email) {
+      const { BOOTSTRAP_ADMIN_EMAILS } = await import('../utils/permissions');
+      return BOOTSTRAP_ADMIN_EMAILS.includes(userProfile.email.toLowerCase());
+    }
+    
+    return false;
   }
 }

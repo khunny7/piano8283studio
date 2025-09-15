@@ -98,7 +98,7 @@ export function BlogAdmin() {
     }));
   };
 
-  const userIsAdmin = isUserAdminSync(userProfile?.role || null);
+  const userIsAdmin = isUserAdminSync(userProfile?.role || null, user?.email);
 
   if (!user) {
     return (

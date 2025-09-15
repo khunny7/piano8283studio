@@ -157,7 +157,13 @@ The blog system includes role-based access control with database-driven user man
 **To become an admin:**
 1. Sign in with Google authentication (creates user profile with "user" role)
 2. Have an existing admin promote your account to "admin" role via the User Management interface
-3. **Bootstrap first admin**: Temporarily add your email to `ADMIN_EMAILS` in `src/utils/permissions.ts`, deploy, sign in, then remove the email from the array
+3. **Bootstrap first admin**: 
+   - Add your email to `BOOTSTRAP_ADMIN_EMAILS` in `src/utils/permissions.ts` 
+   - Deploy the changes: `npm run build && firebase deploy`
+   - Sign in to the site with that email
+   - You'll automatically have admin access
+   - Use the UserManagement interface to promote other users to admin
+   - Remove your email from `BOOTSTRAP_ADMIN_EMAILS` and redeploy for security
 
 ### Blog Post Visibility
 - **Public Posts**: Visible to all visitors
