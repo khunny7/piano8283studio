@@ -1,36 +1,34 @@
-// Simple admin configuration
-// In a real application, this would be stored in a database with proper role management
+import { UserService } from '../services/userService';
+import { UserRole, ROLE_PERMISSIONS, Permission } from '../types/user';
 
-export const ADMIN_EMAILS: string[] = [
-  // Add admin email addresses here
-  // Example: 'your-email@gmail.com',
-  // To become an admin, add your email address to this array and redeploy the app
-];
-
-export const isUserAdmin = (userEmail: string | null): boolean => {
-  if (!userEmail) return false;
-  return ADMIN_EMAILS.includes(userEmail.toLowerCase());
+// Database-driven admin checking
+export const isUserAdmin = async (uid: string | null): Promise<boolean> => {
+  if (!uid) return false;
+  return await UserService.isAdmin(uid);
 };
 
-export interface UserRole {
-  email: string;
-  role: 'admin' | 'user';
-  permissions: string[];
-}
-
-// Default permissions for different roles
-export const ROLE_PERMISSIONS = {
-  admin: ['read', 'write', 'delete', 'manage_users'],
-  user: ['read']
+// Synchronous version for cases where we already have the user profile
+export const isUserAdminSync = (userRole: UserRole | null): boolean => {
+  return userRole === 'admin';
 };
 
-export const hasPermission = (userEmail: string | null, permission: string): boolean => {
-  if (!userEmail) return false;
-  
-  const isAdmin = isUserAdmin(userEmail);
-  if (isAdmin) {
-    return ROLE_PERMISSIONS.admin.includes(permission);
-  }
-  
-  return ROLE_PERMISSIONS.user.includes(permission);
+export const hasPermission = (userRole: UserRole | null, permission: Permission): boolean => {
+  if (!userRole) return false;
+  return (ROLE_PERMISSIONS[userRole] as readonly Permission[]).includes(permission);
+};
+
+// Get user role by UID
+export const getUserRole = async (uid: string | null): Promise<UserRole | null> => {
+  if (!uid) return null;
+  const userProfile = await UserService.getUserProfile(uid);
+  return userProfile?.role || null;
+};
+
+// Legacy exports for backward compatibility (now deprecated)
+export const ADMIN_EMAILS: string[] = [];
+
+// @deprecated - Use UserService.isAdmin() instead
+export const isUserAdminLegacy = (userEmail: string | null): boolean => {
+  console.warn('isUserAdminLegacy is deprecated. Use UserService.isAdmin() instead.');
+  return false;
 };

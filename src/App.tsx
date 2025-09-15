@@ -8,6 +8,7 @@ import { ThemeToggle } from './components/layout/ThemeToggle';
 import { HeaderAuth } from './components/layout/HeaderAuth';
 import { FirestoreDemo } from './components/FirestoreDemo';
 import { BlogAdmin } from './components/BlogAdmin';
+import { UserManagement } from './components/UserManagement';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           </Routes>
           <FirestoreDemo />
           <BlogAdmin />
+          <UserManagement />
         </div>
       </BrowserRouter>
     </AuthProvider>

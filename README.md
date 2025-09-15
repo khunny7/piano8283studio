@@ -130,25 +130,34 @@ This project uses Firebase for hosting and Firestore for the blog backend.
 4. Copy the config values to `.env.local`
 
 ### Database Setup
-Firestore is configured with security rules in `firestore.rules`. Current rules allow full access for development.
+Firestore is configured with security rules in `firestore.rules`. The rules protect user data and implement role-based access control.
 
-**⚠️ Important**: Before going to production, update the security rules to require authentication for write operations.
+**Database Collections:**
+- `users`: User profiles with roles and metadata
+- `blogPosts`: Blog posts with privacy settings  
+- `messages`: Demo messages for FirestoreDemo component
 
 ### Available Components
 - `FirestoreDemo`: Test component for reading/writing data
 - `BlogAdmin`: CRUD interface for managing blog posts (admin-only)
+- `UserManagement`: Interface for managing user roles (admin-only)
 
 ### Authentication & Admin Access
-The blog system includes role-based access control:
+The blog system includes role-based access control with database-driven user management:
 
 - **Regular Users**: Can sign in and view public blog posts
-- **Admin Users**: Can manage blog posts, view private posts
+- **Admin Users**: Can manage blog posts, view private posts, and manage user roles
+
+**User Management System:**
+- User profiles are automatically created in Firestore on first sign-in
+- All users start with the "user" role by default
+- User roles are stored in the `users` collection in Firestore
+- Admins can promote/demote users through the User Management interface
 
 **To become an admin:**
-1. Sign in with Google authentication
-2. Add your email address to the `ADMIN_EMAILS` array in `src/utils/permissions.ts`
-3. Redeploy the application
-4. Your user account will now have admin privileges
+1. Sign in with Google authentication (creates user profile with "user" role)
+2. Have an existing admin promote your account to "admin" role via the User Management interface
+3. **Bootstrap first admin**: Temporarily add your email to `ADMIN_EMAILS` in `src/utils/permissions.ts`, deploy, sign in, then remove the email from the array
 
 ### Blog Post Visibility
 - **Public Posts**: Visible to all visitors

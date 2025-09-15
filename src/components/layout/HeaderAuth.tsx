@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { isUserAdmin } from '../../utils/permissions';
+import { isUserAdminSync } from '../../utils/permissions';
 
 export const HeaderAuth: React.FC = () => {
-  const { user, loading, signInWithGoogle, logout } = useAuth();
-  const userIsAdmin = isUserAdmin(user?.email || null);
+  const { user, userProfile, loading, signInWithGoogle, logout } = useAuth();
+  const userIsAdmin = isUserAdminSync(userProfile?.role || null);
 
   if (loading) {
     return <div style={{ fontSize: '0.9rem', color: '#666' }}>Loading...</div>;

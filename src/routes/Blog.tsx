@@ -3,7 +3,7 @@ import { posts } from '../blog';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { isUserAdmin } from '../utils/permissions';
+import { isUserAdminSync } from '../utils/permissions';
 
 interface LoadedPostMeta {
   slug?: string;
@@ -28,7 +28,7 @@ interface FirestoreBlogPost {
 }
 
 export default function Blog() {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [loaded, setLoaded] = useState<LoadedPostMeta[]>([]);
   const [active, setActive] = useState<LoadedPostMeta | null>(null);
   const [firestorePosts, setFirestorePosts] = useState<FirestoreBlogPost[]>([]);
@@ -47,7 +47,7 @@ export default function Blog() {
 
     // Load Firestore posts
     fetchFirestorePosts();
-  }, [user]); // Re-fetch when user authentication changes
+  }, [userProfile]); // Re-fetch when user profile changes
 
   async function fetchFirestorePosts() {
     try {
@@ -60,7 +60,7 @@ export default function Blog() {
       } as FirestoreBlogPost));
       
       // Filter out private posts for non-admin users
-      const userIsAdmin = isUserAdmin(user?.email || null);
+      const userIsAdmin = isUserAdminSync(userProfile?.role || null);
       const filteredPosts = allPosts.filter(post => 
         !post.isPrivate || (post.isPrivate && userIsAdmin)
       );

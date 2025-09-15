@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
-import { isUserAdmin } from '../utils/permissions';
+import { isUserAdminSync } from '../utils/permissions';
 
 interface BlogPost {
   id?: string;
@@ -20,7 +20,7 @@ interface BlogPost {
 }
 
 export function BlogAdmin() {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [form, setForm] = useState<Omit<BlogPost, 'author' | 'authorEmail' | 'authorPhoto' | 'published' | 'createdAt' | 'updatedAt'>>({
     title: '', 
@@ -98,7 +98,7 @@ export function BlogAdmin() {
     }));
   };
 
-  const userIsAdmin = isUserAdmin(user?.email || null);
+  const userIsAdmin = isUserAdminSync(userProfile?.role || null);
 
   if (!user) {
     return (
