@@ -136,12 +136,29 @@ Firestore is configured with security rules in `firestore.rules`. Current rules 
 
 ### Available Components
 - `FirestoreDemo`: Test component for reading/writing data
-- `BlogAdmin`: CRUD interface for managing blog posts
+- `BlogAdmin`: CRUD interface for managing blog posts (admin-only)
+
+### Authentication & Admin Access
+The blog system includes role-based access control:
+
+- **Regular Users**: Can sign in and view public blog posts
+- **Admin Users**: Can manage blog posts, view private posts
+
+**To become an admin:**
+1. Sign in with Google authentication
+2. Add your email address to the `ADMIN_EMAILS` array in `src/utils/permissions.ts`
+3. Redeploy the application
+4. Your user account will now have admin privileges
+
+### Blog Post Visibility
+- **Public Posts**: Visible to all visitors
+- **Private Posts**: Only visible to admin users
 
 ### Local Development
 1. Ensure `.env.local` is configured with your Firebase credentials
 2. Run `npm run dev`
 3. Visit the app to test Firebase connectivity
+4. Sign in with Google to test authentication features
 
 ### Deployment
 Firebase rules and hosting are automatically deployed via GitHub Actions when pushing to main branch.

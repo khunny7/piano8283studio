@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { posts } from '../blog';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../context/AuthContext';
+import { isUserAdmin } from '../utils/permissions';
 
 interface LoadedPostMeta {
   slug?: string;
@@ -22,9 +24,11 @@ interface FirestoreBlogPost {
   authorPhoto?: string;
   published: string;
   tags: string[];
+  isPrivate?: boolean;
 }
 
 export default function Blog() {
+  const { user } = useAuth();
   const [loaded, setLoaded] = useState<LoadedPostMeta[]>([]);
   const [active, setActive] = useState<LoadedPostMeta | null>(null);
   const [firestorePosts, setFirestorePosts] = useState<FirestoreBlogPost[]>([]);
@@ -43,21 +47,27 @@ export default function Blog() {
 
     // Load Firestore posts
     fetchFirestorePosts();
-  }, []);
+  }, [user]); // Re-fetch when user authentication changes
 
   async function fetchFirestorePosts() {
     try {
       setLoading(true);
       setError(null);
       const snap = await getDocs(collection(db, 'blogPosts'));
-      const posts = snap.docs.map(doc => ({ 
+      const allPosts = snap.docs.map(doc => ({ 
         id: doc.id, 
         ...doc.data() 
       } as FirestoreBlogPost));
       
+      // Filter out private posts for non-admin users
+      const userIsAdmin = isUserAdmin(user?.email || null);
+      const filteredPosts = allPosts.filter(post => 
+        !post.isPrivate || (post.isPrivate && userIsAdmin)
+      );
+      
       // Sort by published date (newest first)
-      posts.sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
-      setFirestorePosts(posts);
+      filteredPosts.sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+      setFirestorePosts(filteredPosts);
     } catch (err) {
       console.error('Error fetching Firestore posts:', err);
       setError('Unable to load blog posts. Please try again later.');

@@ -5,9 +5,9 @@ import Portfolio from './routes/Portfolio';
 import Blog from './routes/Blog';
 import NotFound from './routes/NotFound';
 import { ThemeToggle } from './components/layout/ThemeToggle';
+import { HeaderAuth } from './components/layout/HeaderAuth';
 import { FirestoreDemo } from './components/FirestoreDemo';
 import { BlogAdmin } from './components/BlogAdmin';
-import { AuthComponent } from './components/AuthComponent';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -21,7 +21,10 @@ function App() {
               <Link to="/portfolio">Portfolio</Link>
               <Link to="/blog">Blog</Link>
             </nav>
-            <ThemeToggle />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <HeaderAuth />
+              <ThemeToggle />
+            </div>
           </header>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -29,7 +32,6 @@ function App() {
             <Route path="/blog" element={<Blog />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <AuthComponent />
           <FirestoreDemo />
           <BlogAdmin />
         </div>

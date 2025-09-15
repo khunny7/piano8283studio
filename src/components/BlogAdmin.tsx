@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { isUserAdmin } from '../utils/permissions';
 
 interface BlogPost {
   id?: string;
@@ -15,6 +16,7 @@ interface BlogPost {
   createdAt?: any;
   updatedAt?: any;
   tags: string[];
+  isPrivate: boolean;
 }
 
 export function BlogAdmin() {
@@ -24,7 +26,8 @@ export function BlogAdmin() {
     title: '', 
     slug: '', 
     content: '', 
-    tags: []
+    tags: [],
+    isPrivate: false
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -57,7 +60,7 @@ export function BlogAdmin() {
       });
     }
     
-    setForm({ title: '', slug: '', content: '', tags: [] });
+    setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false });
     setEditingId(null);
     fetchPosts();
   }
@@ -67,7 +70,8 @@ export function BlogAdmin() {
       title: post.title,
       slug: post.slug,
       content: post.content,
-      tags: post.tags
+      tags: post.tags,
+      isPrivate: post.isPrivate || false
     });
     setEditingId(post.id || null);
   }
@@ -94,11 +98,25 @@ export function BlogAdmin() {
     }));
   };
 
+  const userIsAdmin = isUserAdmin(user?.email || null);
+
   if (!user) {
     return (
       <div style={{ border: '1px solid #aaa', padding: 16, borderRadius: 8, marginTop: 24 }}>
         <h3>Blog Admin</h3>
         <p>Please sign in to manage blog posts.</p>
+      </div>
+    );
+  }
+
+  if (!userIsAdmin) {
+    return (
+      <div style={{ border: '1px solid #aaa', padding: 16, borderRadius: 8, marginTop: 24 }}>
+        <h3>Blog Admin</h3>
+        <p>Access denied. Admin privileges required to manage blog posts.</p>
+        <p style={{ fontSize: '0.9rem', color: '#666' }}>
+          Current user: {user.displayName} ({user.email})
+        </p>
       </div>
     );
   }
@@ -139,6 +157,17 @@ export function BlogAdmin() {
         </div>
         
         <div style={{ marginBottom: 8 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input 
+              type="checkbox" 
+              checked={form.isPrivate} 
+              onChange={e => setForm(f => ({ ...f, isPrivate: e.target.checked }))}
+            />
+            <span>Private post (only visible to admins)</span>
+          </label>
+        </div>
+        
+        <div style={{ marginBottom: 8 }}>
           <textarea 
             placeholder="Content" 
             value={form.content} 
@@ -166,7 +195,7 @@ export function BlogAdmin() {
           {editingId && (
             <button 
               onClick={() => { 
-                setForm({ title: '', slug: '', content: '', tags: [] }); 
+                setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false }); 
                 setEditingId(null); 
               }}
               style={{ 
