@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { isUserAdminSync } from '../utils/permissions';
 import { formatDate } from '../utils/formatDate';
 import DOMPurify from 'dompurify';
+import { demoBlogPost } from '../data/demoBlogPost';
 
 interface FirestoreBlogPost {
   id: string;
@@ -36,11 +37,20 @@ export default function Blog() {
     try {
       setLoading(true);
       setError(null);
-      const snap = await getDocs(collection(db, 'blogPosts'));
-      const allPosts = snap.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
-      } as FirestoreBlogPost));
+      
+      // Always include the demo post to showcase functionality
+      const allPosts = [demoBlogPost];
+      
+      try {
+        const snap = await getDocs(collection(db, 'blogPosts'));
+        const firestorePosts = snap.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data() 
+        } as FirestoreBlogPost));
+        allPosts.push(...firestorePosts);
+      } catch (firestoreError) {
+        console.log('Firestore not available, showing demo content only');
+      }
       
       const userIsAdmin = isUserAdminSync(userProfile?.role || null);
       const filteredPosts = allPosts.filter(post => 
@@ -50,8 +60,9 @@ export default function Blog() {
       filteredPosts.sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
       setFirestorePosts(filteredPosts);
     } catch (err) {
-      console.error('Error fetching Firestore posts:', err);
-      setError('Unable to load blog posts. Please try again later.');
+      console.error('Error fetching posts:', err);
+      // Fallback to demo post only
+      setFirestorePosts([demoBlogPost]);
     } finally {
       setLoading(false);
     }
