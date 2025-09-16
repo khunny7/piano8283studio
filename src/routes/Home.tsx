@@ -12,58 +12,58 @@ export default function Home() {
     {
       id: 1,
       title: "Little Trip with Yunsol 👶",
-      description: "A heartwarming website we built for finding toddler-friendly places around Seattle. Born from personal experience - because finding good spots for little ones shouldn't be that hard!",
+      description: "A heartwarming website I built for finding toddler-friendly places around Seattle. Born from personal experience - because finding good spots for little ones shouldn't be that hard!",
       tech: ["React", "Vite", "Firebase", "Love"],
       image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=250&fit=crop",
       status: "Live & Loved",
-      personal: "One of our favorite projects - built while chasing around a team member's nephew!"
+      personal: "One of my favorite projects - built while watching little Yunsol explore the world!"
     },
     {
       id: 2,
-      title: "Piano Practice Tracker 🎹",
-      description: "Because we kept forgetting how long we practiced (spoiler: it wasn't as much as we thought). Now with guilt-inducing statistics and motivational quotes.",
-      tech: ["TypeScript", "React", "Firebase", "Persistence"],
-      image: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400&h=250&fit=crop",
-      status: "Daily Driver",
-      personal: "Yes, our team actually uses this every day (when we remember to practice)"
+      title: "KWordle 🎯",
+      description: "A Korean twist on the popular word guessing game. I built this to practice Korean vocabulary while having fun with this localized version of Wordle.",
+      tech: ["JavaScript", "CSS Grid", "Game Logic", "Korean"],
+      image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=400&h=250&fit=crop",
+      status: "Daily Challenge",
+      personal: "Combining my love for word games with Korean language learning. Perfect for keeping my vocabulary sharp!"
     },
     {
       id: 3,
-      title: "Mood-based Color Palette Generator 🌈",
-      description: "Ever wanted colors that match your Monday morning energy? Or Friday afternoon vibes? This generates palettes based on how you're feeling right now.",
-      tech: ["JavaScript", "Canvas API", "Psychology", "Coffee"],
-      image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400&h=250&fit=crop",
-      status: "Mood Dependent",
-      personal: "Built during a particularly colorful week of team brainstorming"
+      title: "Dangun Land 🏛️",
+      description: "An interactive exploration of Korean mythology and culture, featuring the legendary story of Dangun. A digital journey through ancient tales brought to life.",
+      tech: ["React", "Animation", "Storytelling", "Culture"],
+      image: "https://images.unsplash.com/photo-1549497538-303791108f95?w=400&h=250&fit=crop",
+      status: "Mythical",
+      personal: "Diving into my cultural roots through code - bringing ancient Korean legends into the digital age"
     }
   ];
 
   const personalQuirks = [
-    { emoji: "☕", fact: "Our debugging is 20% code, 80% coffee" },
+    { emoji: "☕", fact: "My debugging is 20% code, 80% coffee" },
     { emoji: "🌙", fact: "Best ideas come at 2 AM (worst time to implement them)" },
     { emoji: "🎵", fact: "Can't code without Lo-fi hip hop playlists" },
-    { emoji: "🐛", fact: "We name our bugs. Current team favorite: Gerald the Persistent" }
+    { emoji: "🐛", fact: "I name my bugs. Current favorite: Gerald the Persistent" }
   ];
 
   const realSkills = [
     { 
       category: "Frontend Magic ✨", 
-      items: ["React (our comfort zone)", "TypeScript (saves our sanity)", "CSS (the pretty stuff)", "Vue.js (when React won't cooperate)"],
+      items: ["React (my comfort zone)", "TypeScript (saves my sanity)", "CSS (the pretty stuff)", "Vue.js (when React won't cooperate)"],
       vibe: "Making pixels dance since 2020"
     },
     { 
       category: "Backend Wizardry 🧙‍♂️", 
-      items: ["Node.js (JavaScript everywhere!)", "Python (for when we feel smart)", "Firebase (Google does the heavy lifting)", "PostgreSQL (data needs a home)"],
+      items: ["Node.js (JavaScript everywhere!)", "Python (for when I feel smart)", "Firebase (Google does the heavy lifting)", "PostgreSQL (data needs a home)"],
       vibe: "Servers are just other people's computers"
     },
     { 
       category: "Design & UX 🎨", 
-      items: ["Figma (our digital canvas)", "User Research (talking to humans)", "Prototyping (failing fast)", "Accessibility (everyone deserves good UX)"],
+      items: ["Figma (my digital canvas)", "User Research (talking to humans)", "Prototyping (failing fast)", "Accessibility (everyone deserves good UX)"],
       vibe: "Making things that don't suck to use"
     },
     { 
       category: "Life Skills 🌱", 
-      items: ["Stack Overflow (our second brain)", "Git (time travel for code)", "Coffee Brewing (essential dev tool)", "Rubber Duck Debugging (quack quack)"],
+      items: ["Stack Overflow (my second brain)", "Git (time travel for code)", "Coffee Brewing (essential dev tool)", "Rubber Duck Debugging (quack quack)"],
       vibe: "The real skills they don't teach in bootcamp"
     }
   ];
@@ -77,27 +77,27 @@ export default function Home() {
             <div className="hero-text">
               <div className="greeting">
                 <span className="wave">👋</span>
-                <span>Hey there! We're</span>
+                <span>Hey there! I'm</span>
               </div>
               <h1 className="hero-title">
                 Piano8283
                 <span className="subtitle">
-                  (Yes, that's really what we go by)
+                  (Yes, that's really what I go by)
                 </span>
               </h1>
               <p className="hero-description">
-                We're a team of developers who actually enjoy CSS, designers who code our own prototypes, 
-                and writers who think good UX is like a good joke - if you have to explain it, it's probably not working.
+                I'm a developer who actually enjoys CSS, designs my own prototypes, 
+                and thinks good UX is like a good joke - if you have to explain it, it's probably not working.
                 <br /><br />
-                When we're not turning coffee into code, you'll find us exploring with our cameras, 
-                practicing various instruments (hence the name), or convincing people that dark mode is superior.
+                When I'm not turning coffee into code, you'll find me exploring with my camera, 
+                practicing piano (hence the name), or convincing people that dark mode is superior.
               </p>
               <div className="hero-actions">
                 <Link to="/portfolio" className="btn-primary">
-                  🚀 See Our Work
+                  🚀 See My Work
                 </Link>
                 <Link to="/blog" className="btn-gold">
-                  📚 Read Our Thoughts
+                  📚 Read My Thoughts
                 </Link>
               </div>
             </div>
@@ -115,7 +115,7 @@ export default function Home() {
                   <div className="code-content">
                     <div className="code-line">
                       <span className="code-keyword">const</span> 
-                      <span className="code-variable"> team</span> 
+                      <span className="code-variable"> developer</span> 
                       <span className="code-operator"> = </span>
                       <span className="code-punctuation">&#123;</span>
                     </div>
@@ -158,8 +158,8 @@ export default function Home() {
       <section className="section featured-projects">
         <div className="container">
           <div className="section-header">
-            <h2>Things We've Built (And Actually Use) 🛠️</h2>
-            <p>These aren't just portfolio pieces - they're real projects born from real problems we've encountered</p>
+            <h2>Things I've Built (And Actually Use) 🛠️</h2>
+            <p>These aren't just portfolio pieces - they're real projects born from real problems I've encountered</p>
           </div>
           <div className="projects-grid">
             {featuredProjects.map(project => (
@@ -196,8 +196,8 @@ export default function Home() {
       <section className="section skills-section">
         <div className="container">
           <div className="section-header">
-            <h2>Our Digital Toolbox 🧰</h2>
-            <p>Technologies we use to bring ideas to life (and occasionally break things)</p>
+            <h2>My Digital Toolbox 🧰</h2>
+            <p>Technologies I use to bring ideas to life (and occasionally break things)</p>
           </div>
           <div className="skills-grid">
             {realSkills.map(skill => (
@@ -221,10 +221,10 @@ export default function Home() {
           <div className="cta-content">
             <h2>Let's Build Something Cool Together 🤝</h2>
             <p>
-              Got an idea that needs some digital magic? We're always up for interesting projects, 
+              Got an idea that needs some digital magic? I'm always up for interesting projects, 
               especially if they involve solving real problems or making someone's day a little better.
               <br /><br />
-              <strong>Fair warning:</strong> We might suggest adding way too many animations. It's a problem we're working on.
+              <strong>Fair warning:</strong> I might suggest adding way too many animations. It's a problem I'm working on.
             </p>
             <div className="cta-actions">
               <a href="mailto:contact@piano8283.dev" className="btn-gold">
