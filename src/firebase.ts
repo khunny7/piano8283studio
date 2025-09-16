@@ -3,12 +3,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyDZKJcx7JGSQjyRwepkPry6KJ6BcuzqM_g",
+  authDomain: "piano8283-a9aca.firebaseapp.com",
+  projectId: "piano8283-a9aca",
+  storageBucket: "piano8283-a9aca.firebasestorage.app",
+  messagingSenderId: "702581877359",
+  appId: "1:702581877359:web:b3b87df6bfc47c0b93bb9a"
 };
 
 export const app = initializeApp(firebaseConfig);
