@@ -49,7 +49,7 @@ function AppContent() {
             <div className="logo-section">
               <Link to="/" className="logo">
                 <span className="logo-text">Piano8283</span>
-                <span className="logo-subtitle">Developers • Designers • Writers</span>
+                <span className="logo-subtitle">Developer • Designer • Creator</span>
               </Link>
             </div>
             
@@ -79,7 +79,7 @@ function AppContent() {
             <div className="footer-section">
               <h3>Piano8283 🎹</h3>
               <p>
-                Just a developer who loves turning ideas into pixels and code into experiences. 
+                A developer who loves turning ideas into pixels and code into experiences. 
                 Currently based in Seattle, where the coffee is strong and the WiFi is stronger.
               </p>
               <div className="footer-status">
@@ -90,7 +90,7 @@ function AppContent() {
             <div className="footer-section">
               <h4>Quick Escapes</h4>
               <Link to="/portfolio">🚀 My Projects</Link>
-              <Link to="/blog">📝 Random Thoughts</Link>
+              <Link to="/blog">📝 My Thoughts</Link>
               <a href="mailto:contact@piano8283.dev">📧 Say Hello</a>
               <a href="/portfolio?debug=true">🐛 Debug Mode</a>
             </div>

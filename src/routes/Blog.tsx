@@ -127,7 +127,7 @@ export default function Blog() {
               <h1>Thoughts & Discoveries</h1>
               <p className="hero-subtitle">
                 A collection of ideas, technical insights, and personal reflections 
-                from our journey in development and design. Sometimes profound, 
+                from my journey in development and design. Sometimes profound, 
                 sometimes just thoughts worth sharing.
               </p>
             </div>

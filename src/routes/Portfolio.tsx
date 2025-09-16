@@ -36,7 +36,7 @@ export default function Portfolio() {
         <div className="container">
           <div className="portfolio-header">
             <div className="header-content">
-              <h1>Our Digital Creations 🚀</h1>
+              <h1>My Digital Creations 🚀</h1>
               <p className="hero-subtitle">
                 A collection of projects born from real problems, fueled by coffee, and 
                 seasoned with a healthy dose of "how hard could it be?"
@@ -72,7 +72,7 @@ export default function Portfolio() {
                 </div>
                 <div className="window-content">
                   <div className="code-line">
-                    <span className="code-comment">// Our development philosophy</span>
+                    <span className="code-comment">// My development philosophy</span>
                   </div>
                   <div className="code-line">
                     <span className="code-keyword">const</span>
@@ -187,17 +187,17 @@ export default function Portfolio() {
           <div className="footer-content">
             <h2>What's Next? 🤔</h2>
             <p>
-              Always cooking up new ideas. Current team obsessions include: making CSS animations 
-              that serve no purpose, building tools we'll use once, and convincing ourselves 
-              that this time we'll actually document our code properly.
+              Always cooking up new ideas. Current obsessions include: making CSS animations 
+              that serve no purpose, building tools I'll use once, and convincing myself 
+              that this time I'll actually document my code properly.
             </p>
             <div className="next-projects">
               <div className="coming-soon">
                 <h4>🔮 Coming Eventually</h4>
                 <ul>
                   <li>🎮 Retro game collection (because the world needs more pixel art)</li>
-                  <li>📚 Personal learning tracker (to guilt ourselves into studying)</li>
-                  <li>🌱 Plant care reminder app (our succulents keep dying)</li>
+                  <li>📚 Personal learning tracker (to guilt myself into studying)</li>
+                  <li>🌱 Plant care reminder app (my succulents keep dying)</li>
                   <li>🎵 Spotify playlist mood analyzer (very important research)</li>
                 </ul>
               </div>
