@@ -1,6 +1,6 @@
-# Personal Portfolio & Blog (React + Vite)
+# Piano8283 - Team Portfolio & Blog (React + Vite)
 
-This project is a personal portfolio and blog site built with **React**, **TypeScript**, and **Vite**. It will showcase projects (apps, services, games, designs) and provide a simple MDX-powered blog section for articles.
+This project is a team portfolio and blog site built with **React**, **TypeScript**, and **Vite**. It showcases our projects (apps, services, games, designs) and provides a Firebase-powered blog section for articles.
 
 ## Planned Features
 - Portfolio project listing & filters

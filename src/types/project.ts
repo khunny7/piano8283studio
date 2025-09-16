@@ -7,4 +7,8 @@ export interface Project {
   repoUrl?: string;
   liveUrl?: string;
   image?: string;
+  status?: string;
+  personal?: string;
+  tech?: string[];
+  category?: string;
 }
