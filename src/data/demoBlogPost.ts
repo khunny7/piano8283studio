@@ -46,8 +46,8 @@ export const demoBlogPost = {
     
     <ol>
       <li>Image upload and hosting</li>
-      <li>Draft saving</li>
-      <li>Comment system</li>
+      <li><strike>Draft saving</strike> ✅ <strong>Now Available!</strong></li>
+      <li><strike>Comment system</strike> ✅ <strong>Now Available!</strong></li>
       <li>Social sharing</li>
       <li>Advanced typography options</li>
     </ol>
@@ -60,5 +60,6 @@ export const demoBlogPost = {
   published: new Date().toISOString(),
   tags: ['announcement', 'features', 'blog', 'rich-text'],
   isPrivate: false,
+  isDraft: false, // This is a published demo post
   featuredImage: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1172&q=80'
 };

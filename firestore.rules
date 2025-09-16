@@ -1,7 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Temporary simplified rules for debugging
     // Users collection - allow authenticated users to manage their own profiles
     // and allow reading all users for admin functionality
     match /users/{userId} {
@@ -19,6 +18,16 @@ service cloud.firestore {
     match /blogPosts/{postId} {
       allow read: if true;
       allow write: if request.auth != null;
+    }
+    
+    // Comments - read access for everyone, write access for authenticated users
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid == resource.data.authorId;
+      allow delete: if request.auth != null && 
+        (request.auth.uid == resource.data.authorId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
     
     // Test documents - allow read/write for development
