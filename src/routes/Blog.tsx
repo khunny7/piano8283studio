@@ -4,6 +4,8 @@ import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { isUserAdminSync } from '../utils/permissions';
 import { formatDate } from '../utils/formatDate';
+import DOMPurify from 'dompurify';
+import { demoBlogPost } from '../data/demoBlogPost';
 
 interface FirestoreBlogPost {
   id: string;
@@ -16,6 +18,7 @@ interface FirestoreBlogPost {
   published: string;
   tags: string[];
   isPrivate?: boolean;
+  featuredImage?: string;
 }
 
 export default function Blog() {
@@ -34,11 +37,20 @@ export default function Blog() {
     try {
       setLoading(true);
       setError(null);
-      const snap = await getDocs(collection(db, 'blogPosts'));
-      const allPosts = snap.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
-      } as FirestoreBlogPost));
+      
+      // Always include the demo post to showcase functionality
+      const allPosts = [demoBlogPost];
+      
+      try {
+        const snap = await getDocs(collection(db, 'blogPosts'));
+        const firestorePosts = snap.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data() 
+        } as FirestoreBlogPost));
+        allPosts.push(...firestorePosts);
+      } catch (firestoreError) {
+        console.log('Firestore not available, showing demo content only');
+      }
       
       const userIsAdmin = isUserAdminSync(userProfile?.role || null);
       const filteredPosts = allPosts.filter(post => 
@@ -48,8 +60,9 @@ export default function Blog() {
       filteredPosts.sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
       setFirestorePosts(filteredPosts);
     } catch (err) {
-      console.error('Error fetching Firestore posts:', err);
-      setError('Unable to load blog posts. Please try again later.');
+      console.error('Error fetching posts:', err);
+      // Fallback to demo post only
+      setFirestorePosts([demoBlogPost]);
     } finally {
       setLoading(false);
     }
@@ -65,8 +78,22 @@ export default function Blog() {
 
   const readingTime = (content: string) => {
     const wordsPerMinute = 200;
-    const words = content.split(' ').length;
+    // Strip HTML tags to count words accurately
+    const textContent = content.replace(/<[^>]*>/g, '');
+    const words = textContent.split(' ').length;
     return Math.ceil(words / wordsPerMinute);
+  };
+
+  const getTextExcerpt = (htmlContent: string, maxLength: number = 200) => {
+    // Strip HTML tags and get plain text
+    const textContent = htmlContent.replace(/<[^>]*>/g, '');
+    return textContent.length > maxLength 
+      ? `${textContent.substring(0, maxLength)}...` 
+      : textContent;
+  };
+
+  const createSafeHtml = (htmlContent: string) => {
+    return { __html: DOMPurify.sanitize(htmlContent) };
   };
 
   return (
@@ -179,6 +206,16 @@ export default function Blog() {
                   
                   <article className="article">
                     <header className="article-header">
+                      {selectedFirestorePost.featuredImage && (
+                        <div className="article-featured-image">
+                          <img 
+                            src={selectedFirestorePost.featuredImage} 
+                            alt={selectedFirestorePost.title}
+                            style={{ width: '100%', height: '250px', objectFit: 'cover', borderRadius: '8px', marginBottom: '1.5rem' }}
+                          />
+                        </div>
+                      )}
+                      
                       <h1>{selectedFirestorePost.title}</h1>
                       
                       <div className="article-meta">
@@ -217,9 +254,9 @@ export default function Blog() {
                     </header>
                     
                     <div className="article-content">
-                      {selectedFirestorePost.content.split('\n').map((paragraph, index) => (
-                        <p key={index}>{paragraph}</p>
-                      ))}
+                      <div 
+                        dangerouslySetInnerHTML={createSafeHtml(selectedFirestorePost.content)}
+                      />
                     </div>
                   </article>
                 </div>
@@ -228,6 +265,15 @@ export default function Blog() {
                 <div className="articles-grid">
                   {filteredPosts.map(post => (
                     <article key={post.id} className="article-card">
+                      {post.featuredImage && (
+                        <div className="card-featured-image">
+                          <img 
+                            src={post.featuredImage} 
+                            alt={post.title}
+                            style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                          />
+                        </div>
+                      )}
                       <div className="card-content">
                         <header className="card-header">
                           <h2>
@@ -258,10 +304,7 @@ export default function Blog() {
                         
                         <div className="card-excerpt">
                           <p>
-                            {post.content.length > 200 
-                              ? `${post.content.substring(0, 200)}...` 
-                              : post.content
-                            }
+                            {getTextExcerpt(post.content)}
                           </p>
                         </div>
                         

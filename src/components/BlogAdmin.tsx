@@ -3,6 +3,9 @@ import { db } from '../firebase';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { isUserAdminSync } from '../utils/permissions';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import DOMPurify from 'dompurify';
 
 interface BlogPost {
   id?: string;
@@ -17,6 +20,7 @@ interface BlogPost {
   updatedAt?: any;
   tags: string[];
   isPrivate: boolean;
+  featuredImage?: string;
 }
 
 export function BlogAdmin() {
@@ -27,7 +31,8 @@ export function BlogAdmin() {
     slug: '', 
     content: '', 
     tags: [],
-    isPrivate: false
+    isPrivate: false,
+    featuredImage: ''
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -42,8 +47,12 @@ export function BlogAdmin() {
     if (!form.title || !form.slug || !user) return;
     
     const now = new Date().toISOString();
+    // Sanitize HTML content before saving
+    const sanitizedContent = DOMPurify.sanitize(form.content);
+    
     const postData = {
       ...form,
+      content: sanitizedContent,
       author: user.displayName || 'Anonymous',
       authorEmail: user.email || '',
       authorPhoto: user.photoURL || '',
@@ -60,7 +69,7 @@ export function BlogAdmin() {
       });
     }
     
-    setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false });
+    setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false, featuredImage: '' });
     setEditingId(null);
     fetchPosts();
   }
@@ -71,7 +80,8 @@ export function BlogAdmin() {
       slug: post.slug,
       content: post.content,
       tags: post.tags,
-      isPrivate: post.isPrivate || false
+      isPrivate: post.isPrivate || false,
+      featuredImage: post.featuredImage || ''
     });
     setEditingId(post.id || null);
   }
@@ -99,6 +109,27 @@ export function BlogAdmin() {
   };
 
   const userIsAdmin = isUserAdminSync(userProfile?.role || null, user?.email);
+
+  // Quill editor configuration
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      ['link', 'image'],
+      [{ 'align': [] }],
+      ['blockquote', 'code-block'],
+      [{ 'color': [] }, { 'background': [] }],
+      ['clean']
+    ],
+  };
+
+  const quillFormats = [
+    'header', 'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet', 'indent', 'link', 'image',
+    'align', 'blockquote', 'code-block', 'color', 'background'
+  ];
 
   if (!user) {
     return (
@@ -165,12 +196,38 @@ export function BlogAdmin() {
         </div>
         
         <div style={{ marginBottom: 8 }}>
-          <textarea 
-            placeholder="Content" 
-            value={form.content} 
-            onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-            style={{ width: '100%', padding: 8, minHeight: 120, resize: 'vertical' }}
+          <input 
+            placeholder="Featured Image URL (optional)" 
+            value={form.featuredImage} 
+            onChange={e => setForm(f => ({ ...f, featuredImage: e.target.value }))}
+            style={{ width: '100%', padding: 8, marginBottom: 8 }}
           />
+          {form.featuredImage && (
+            <div style={{ marginBottom: 8 }}>
+              <img 
+                src={form.featuredImage} 
+                alt="Featured image preview" 
+                style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover', borderRadius: 4 }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+        </div>
+        
+        <div style={{ marginBottom: 8 }}>
+          <label style={{ display: 'block', marginBottom: 4, fontWeight: 'bold' }}>Content</label>
+          <div style={{ backgroundColor: 'white', borderRadius: 4, border: '1px solid #ddd' }}>
+            <ReactQuill
+              value={form.content}
+              onChange={value => setForm(f => ({ ...f, content: value }))}
+              modules={quillModules}
+              formats={quillFormats}
+              style={{ minHeight: '200px' }}
+              placeholder="Write your blog post content here..."
+            />
+          </div>
         </div>
         
         <div>
@@ -192,7 +249,7 @@ export function BlogAdmin() {
           {editingId && (
             <button 
               onClick={() => { 
-                setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false }); 
+                setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false, featuredImage: '' }); 
                 setEditingId(null); 
               }}
               style={{ 
@@ -224,8 +281,22 @@ export function BlogAdmin() {
               <strong style={{ fontSize: '1.1em' }}>{post.title}</strong>
               <div style={{ fontSize: '0.9em', color: '#666' }}>
                 Slug: {post.slug} | Tags: {post.tags.join(', ') || 'None'}
+                {post.featuredImage && <span> | Has featured image</span>}
               </div>
             </div>
+            
+            {post.featuredImage && (
+              <div style={{ marginBottom: 8 }}>
+                <img 
+                  src={post.featuredImage} 
+                  alt={`Featured image for ${post.title}`}
+                  style={{ maxWidth: 150, maxHeight: 100, objectFit: 'cover', borderRadius: 4 }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
             
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               {post.authorPhoto && (
