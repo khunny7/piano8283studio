@@ -1,37 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { isUserAdminSync } from '../utils/permissions';
 import { formatDate } from '../utils/formatDate';
 import DOMPurify from 'dompurify';
 import { demoBlogPost } from '../data/demoBlogPost';
-
-interface FirestoreBlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  content: string;
-  author: string;
-  authorEmail: string;
-  authorPhoto?: string;
-  published: string;
-  tags: string[];
-  isPrivate?: boolean;
-  featuredImage?: string;
-}
+import { BlogPost } from '../types';
+import { Comments } from '../components/Comments';
 
 export default function Blog() {
   const { user, userProfile } = useAuth();
-  const [firestorePosts, setFirestorePosts] = useState<FirestoreBlogPost[]>([]);
-  const [selectedFirestorePost, setSelectedFirestorePost] = useState<FirestoreBlogPost | null>(null);
+  const [firestorePosts, setFirestorePosts] = useState<BlogPost[]>([]);
+  const [selectedFirestorePost, setSelectedFirestorePost] = useState<BlogPost | null>(null);
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [commentCounts, setCommentCounts] = useState<{[postId: string]: number}>({});
 
   useEffect(() => {
     fetchFirestorePosts();
   }, [userProfile]);
+
+  async function fetchCommentCounts(posts: BlogPost[]) {
+    const counts: {[postId: string]: number} = {};
+    
+    for (const post of posts) {
+      try {
+        const q = query(collection(db, 'comments'), where('postId', '==', post.id));
+        const snap = await getDocs(q);
+        counts[post.id!] = snap.size;
+      } catch (error) {
+        console.error(`Error fetching comment count for post ${post.id}:`, error);
+        counts[post.id!] = 0;
+      }
+    }
+    
+    setCommentCounts(counts);
+  }
 
   async function fetchFirestorePosts() {
     try {
@@ -46,19 +52,34 @@ export default function Blog() {
         const firestorePosts = snap.docs.map(doc => ({ 
           id: doc.id, 
           ...doc.data() 
-        } as FirestoreBlogPost));
+        } as BlogPost));
         allPosts.push(...firestorePosts);
       } catch (firestoreError) {
         console.log('Firestore not available, showing demo content only');
       }
       
       const userIsAdmin = isUserAdminSync(userProfile?.role || null);
-      const filteredPosts = allPosts.filter(post => 
-        !post.isPrivate || (post.isPrivate && userIsAdmin)
-      );
       
-      filteredPosts.sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+      // Filter posts: exclude drafts for non-admin users, and exclude private posts for non-admin users
+      const filteredPosts = allPosts.filter(post => {
+        // Always exclude drafts for public view (only admins can see drafts in admin panel)
+        if (post.isDraft) return false;
+        
+        // For private posts, only show to admins
+        if (post.isPrivate && !userIsAdmin) return false;
+        
+        return true;
+      });
+      
+      filteredPosts.sort((a, b) => {
+        const aDate = a.published ? new Date(a.published).getTime() : 0;
+        const bDate = b.published ? new Date(b.published).getTime() : 0;
+        return bDate - aDate;
+      });
       setFirestorePosts(filteredPosts);
+      
+      // Fetch comment counts for all posts
+      fetchCommentCounts(filteredPosts);
     } catch (err) {
       console.error('Error fetching posts:', err);
       // Fallback to demo post only
@@ -230,7 +251,7 @@ export default function Blog() {
                           <div className="author-details">
                             <span className="author-name">{selectedFirestorePost.author}</span>
                             <span className="publish-date">
-                              {formatDate(selectedFirestorePost.published)}
+                              {selectedFirestorePost.published ? formatDate(selectedFirestorePost.published) : 'Draft'}
                             </span>
                           </div>
                         </div>
@@ -258,6 +279,9 @@ export default function Blog() {
                         dangerouslySetInnerHTML={createSafeHtml(selectedFirestorePost.content)}
                       />
                     </div>
+                    
+                    {/* Comments Section */}
+                    <Comments postId={selectedFirestorePost.id!} />
                   </article>
                 </div>
               ) : (
@@ -297,7 +321,7 @@ export default function Blog() {
                               <span className="author-name">{post.author}</span>
                             </div>
                             <span className="publish-date">
-                              {formatDate(post.published)}
+                              {post.published ? formatDate(post.published) : 'Draft'}
                             </span>
                           </div>
                         </header>
@@ -323,6 +347,9 @@ export default function Blog() {
                           <div className="reading-info">
                             <span className="reading-time">
                               {readingTime(post.content)} min read
+                            </span>
+                            <span className="comment-count" style={{ marginLeft: '1rem' }}>
+                              💬 {commentCounts[post.id!] || 0} comments
                             </span>
                           </div>
                         </footer>

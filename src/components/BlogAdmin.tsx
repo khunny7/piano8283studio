@@ -6,22 +6,7 @@ import { isUserAdminSync } from '../utils/permissions';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
-
-interface BlogPost {
-  id?: string;
-  title: string;
-  slug: string;
-  content: string;
-  author: string;
-  authorEmail: string;
-  authorPhoto?: string;
-  published: string;
-  createdAt?: any;
-  updatedAt?: any;
-  tags: string[];
-  isPrivate: boolean;
-  featuredImage?: string;
-}
+import { BlogPost } from '../types';
 
 export function BlogAdmin() {
   const { user, userProfile } = useAuth();
@@ -32,9 +17,11 @@ export function BlogAdmin() {
     content: '', 
     tags: [],
     isPrivate: false,
+    isDraft: true, // Default to draft
     featuredImage: ''
   });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'published' | 'drafts'>('all');
 
   async function fetchPosts() {
     const snap = await getDocs(collection(db, 'blogPosts'));
@@ -43,22 +30,27 @@ export function BlogAdmin() {
 
   useEffect(() => { fetchPosts(); }, []);
 
-  async function handleSave() {
+  async function handleSave(isDraftSave = false) {
     if (!form.title || !form.slug || !user) return;
     
     const now = new Date().toISOString();
     // Sanitize HTML content before saving
     const sanitizedContent = DOMPurify.sanitize(form.content);
     
-    const postData = {
+    const postData: Partial<BlogPost> = {
       ...form,
       content: sanitizedContent,
       author: user.displayName || 'Anonymous',
       authorEmail: user.email || '',
       authorPhoto: user.photoURL || '',
-      published: now,
       updatedAt: serverTimestamp(),
+      isDraft: isDraftSave,
     };
+
+    // Only set published date when actually publishing (not draft)
+    if (!isDraftSave) {
+      postData.published = now;
+    }
 
     if (editingId) {
       await updateDoc(doc(db, 'blogPosts', editingId), postData);
@@ -69,7 +61,7 @@ export function BlogAdmin() {
       });
     }
     
-    setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false, featuredImage: '' });
+    setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false, isDraft: true, featuredImage: '' });
     setEditingId(null);
     fetchPosts();
   }
@@ -81,6 +73,7 @@ export function BlogAdmin() {
       content: post.content,
       tags: post.tags,
       isPrivate: post.isPrivate || false,
+      isDraft: post.isDraft || false,
       featuredImage: post.featuredImage || ''
     });
     setEditingId(post.id || null);
@@ -107,6 +100,15 @@ export function BlogAdmin() {
       slug: generateSlug(title)
     }));
   };
+
+  // Filter posts based on selected filter
+  const filteredPosts = posts.filter(post => {
+    switch (filter) {
+      case 'published': return !post.isDraft;
+      case 'drafts': return post.isDraft;
+      default: return true; // 'all'
+    }
+  });
 
   const userIsAdmin = isUserAdminSync(userProfile?.role || null, user?.email);
 
@@ -196,6 +198,17 @@ export function BlogAdmin() {
         </div>
         
         <div style={{ marginBottom: 8 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input 
+              type="checkbox" 
+              checked={form.isDraft} 
+              onChange={e => setForm(f => ({ ...f, isDraft: e.target.checked }))}
+            />
+            <span>Save as draft (not published yet)</span>
+          </label>
+        </div>
+        
+        <div style={{ marginBottom: 8 }}>
           <input 
             placeholder="Featured Image URL (optional)" 
             value={form.featuredImage} 
@@ -232,7 +245,22 @@ export function BlogAdmin() {
         
         <div>
           <button 
-            onClick={handleSave}
+            onClick={() => handleSave(true)}
+            style={{ 
+              padding: '8px 16px', 
+              backgroundColor: '#6c757d', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: 4, 
+              marginRight: 8,
+              cursor: 'pointer'
+            }}
+          >
+            Save Draft
+          </button>
+          
+          <button 
+            onClick={() => handleSave(false)}
             style={{ 
               padding: '8px 16px', 
               backgroundColor: '#007bff', 
@@ -243,18 +271,18 @@ export function BlogAdmin() {
               cursor: 'pointer'
             }}
           >
-            {editingId ? 'Update' : 'Publish'} Post
+            {editingId ? 'Update & Publish' : 'Publish'} Post
           </button>
           
           {editingId && (
             <button 
               onClick={() => { 
-                setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false, featuredImage: '' }); 
+                setForm({ title: '', slug: '', content: '', tags: [], isPrivate: false, isDraft: true, featuredImage: '' }); 
                 setEditingId(null); 
               }}
               style={{ 
                 padding: '8px 16px', 
-                backgroundColor: '#6c757d', 
+                backgroundColor: '#dc3545', 
                 color: 'white', 
                 border: 'none', 
                 borderRadius: 4,
@@ -267,22 +295,93 @@ export function BlogAdmin() {
         </div>
       </div>
       
-      <h4>Published Posts</h4>
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+        <h4 style={{ margin: 0 }}>Posts ({posts.length} total)</h4>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => setFilter('all')}
+            style={{
+              padding: '4px 12px',
+              backgroundColor: filter === 'all' ? '#007bff' : '#e9ecef',
+              color: filter === 'all' ? 'white' : '#495057',
+              border: 'none',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            All ({posts.length})
+          </button>
+          <button
+            onClick={() => setFilter('published')}
+            style={{
+              padding: '4px 12px',
+              backgroundColor: filter === 'published' ? '#28a745' : '#e9ecef',
+              color: filter === 'published' ? 'white' : '#495057',
+              border: 'none',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            Published ({posts.filter(p => !p.isDraft).length})
+          </button>
+          <button
+            onClick={() => setFilter('drafts')}
+            style={{
+              padding: '4px 12px',
+              backgroundColor: filter === 'drafts' ? '#ffc107' : '#e9ecef',
+              color: filter === 'drafts' ? 'black' : '#495057',
+              border: 'none',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            Drafts ({posts.filter(p => p.isDraft).length})
+          </button>
+        </div>
+      </div>
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {posts.map(post => (
+        {filteredPosts.map(post => (
           <li key={post.id} style={{ 
             marginBottom: 16, 
             padding: 12, 
             border: '1px solid #ddd', 
             borderRadius: 4,
-            backgroundColor: '#f8f9fa'
+            backgroundColor: post.isDraft ? '#fff3cd' : '#f8f9fa',
+            borderLeft: post.isDraft ? '4px solid #ffc107' : '4px solid #28a745'
           }}>
-            <div style={{ marginBottom: 8 }}>
+            <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
               <strong style={{ fontSize: '1.1em' }}>{post.title}</strong>
-              <div style={{ fontSize: '0.9em', color: '#666' }}>
-                Slug: {post.slug} | Tags: {post.tags.join(', ') || 'None'}
-                {post.featuredImage && <span> | Has featured image</span>}
-              </div>
+              {post.isDraft && (
+                <span style={{ 
+                  backgroundColor: '#ffc107', 
+                  color: 'black', 
+                  padding: '2px 8px', 
+                  borderRadius: 4, 
+                  fontSize: '0.8em',
+                  fontWeight: 'bold'
+                }}>
+                  DRAFT
+                </span>
+              )}
+              {post.isPrivate && (
+                <span style={{ 
+                  backgroundColor: '#dc3545', 
+                  color: 'white', 
+                  padding: '2px 8px', 
+                  borderRadius: 4, 
+                  fontSize: '0.8em',
+                  fontWeight: 'bold'
+                }}>
+                  PRIVATE
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: '0.9em', color: '#666', marginBottom: 8 }}>
+              Slug: {post.slug} | Tags: {post.tags.join(', ') || 'None'}
+              {post.featuredImage && <span> | Has featured image</span>}
             </div>
             
             {post.featuredImage && (
@@ -307,7 +406,9 @@ export function BlogAdmin() {
                 />
               )}
               <span style={{ fontSize: '0.9em', color: '#666' }}>
-                by {post.author} on {new Date(post.published).toLocaleDateString()}
+                by {post.author} 
+                {post.published ? ` on ${new Date(post.published).toLocaleDateString()}` : ' (not published)'}
+                {post.isDraft && ' • Draft created'}
               </span>
             </div>
             
@@ -332,6 +433,35 @@ export function BlogAdmin() {
               >
                 Edit
               </button>
+              
+              {post.isDraft && (
+                <button 
+                  onClick={() => {
+                    setForm({
+                      title: post.title,
+                      slug: post.slug,
+                      content: post.content,
+                      tags: post.tags,
+                      isPrivate: post.isPrivate || false,
+                      isDraft: false,
+                      featuredImage: post.featuredImage || ''
+                    });
+                    handleSave(false);
+                  }}
+                  style={{ 
+                    padding: '4px 12px', 
+                    backgroundColor: '#007bff', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: 4, 
+                    marginRight: 8,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Publish
+                </button>
+              )}
+              
               <button 
                 onClick={() => handleDelete(post.id!)}
                 style={{ 
