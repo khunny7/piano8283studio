@@ -13,9 +13,13 @@
     "deploy:production": "npm run build && npx --package firebase-tools firebase deploy --only hosting"
   },
   "dependencies": {
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.2.6",
     "firebase": "^12.2.1",
+    "quill": "^2.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-quill": "^2.0.0",
     "react-router-dom": "^6.25.1"
   },
   "devDependencies": {
