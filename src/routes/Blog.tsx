@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { isUserAdminSync } from '../utils/permissions';
@@ -8,6 +8,8 @@ import DOMPurify from 'dompurify';
 import { demoBlogPost } from '../data/demoBlogPost';
 import { BlogPost } from '../types';
 import { Comments } from '../components/Comments';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 export default function Blog() {
   const { user, userProfile } = useAuth();
@@ -17,6 +19,19 @@ export default function Blog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [commentCounts, setCommentCounts] = useState<{[postId: string]: number}>({});
+  
+  // Admin blog creation state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    slug: '',
+    content: '',
+    tags: [] as string[],
+    isPrivate: false,
+    isDraft: true,
+    featuredImage: ''
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchFirestorePosts();
@@ -117,6 +132,93 @@ export default function Blog() {
     return { __html: DOMPurify.sanitize(htmlContent) };
   };
 
+  // Admin blog creation functions
+  const userIsAdmin = isUserAdminSync(userProfile?.role || null, user?.email);
+
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+  };
+
+  const handleTitleChange = (title: string) => {
+    setCreateForm(f => ({ 
+      ...f, 
+      title,
+      slug: generateSlug(title)
+    }));
+  };
+
+  const handleCreatePost = async (isDraftSave = false) => {
+    if (!createForm.title || !createForm.slug || !user || saving) return;
+    
+    try {
+      setSaving(true);
+      const now = new Date().toISOString();
+      const sanitizedContent = DOMPurify.sanitize(createForm.content);
+      
+      const postData: Partial<BlogPost> = {
+        ...createForm,
+        content: sanitizedContent,
+        author: user.displayName || 'Anonymous',
+        authorEmail: user.email || '',
+        authorPhoto: user.photoURL || '',
+        updatedAt: serverTimestamp(),
+        isDraft: isDraftSave,
+      };
+
+      if (!isDraftSave) {
+        postData.published = now;
+      }
+
+      await addDoc(collection(db, 'blogPosts'), {
+        ...postData,
+        createdAt: serverTimestamp(),
+      });
+      
+      // Reset form and close
+      setCreateForm({ 
+        title: '', 
+        slug: '', 
+        content: '', 
+        tags: [], 
+        isPrivate: false, 
+        isDraft: true, 
+        featuredImage: '' 
+      });
+      setShowCreateForm(false);
+      
+      // Refresh posts
+      fetchFirestorePosts();
+    } catch (error) {
+      console.error('Error creating post:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      ['link', 'image'],
+      [{ 'align': [] }],
+      ['blockquote', 'code-block'],
+      [{ 'color': [] }, { 'background': [] }],
+      ['clean']
+    ],
+  };
+
+  const quillFormats = [
+    'header', 'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet', 'indent', 'link', 'image',
+    'align', 'blockquote', 'code-block', 'color', 'background'
+  ];
+
   return (
     <div className="blog-page">
       {/* Blog Hero */}
@@ -181,6 +283,222 @@ export default function Blog() {
                 <p className="showing-count">
                   Showing {filteredPosts.length} of {firestorePosts.length} posts
                 </p>
+                {userIsAdmin && (
+                  <button 
+                    onClick={() => setShowCreateForm(!showCreateForm)}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: showCreateForm ? '#dc3545' : '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      fontWeight: 'bold',
+                      marginTop: '8px'
+                    }}
+                  >
+                    {showCreateForm ? '✕ Cancel' : '✏️ Create New Post'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Admin Create Post Form */}
+      {userIsAdmin && showCreateForm && (
+        <section className="create-post-form" style={{ backgroundColor: '#f8f9fa', padding: '2rem 0' }}>
+          <div className="container">
+            <div style={{ 
+              backgroundColor: 'white', 
+              padding: '2rem', 
+              borderRadius: '8px', 
+              border: '1px solid #dee2e6',
+              maxWidth: '800px',
+              margin: '0 auto'
+            }}>
+              <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#495057' }}>Create New Blog Post</h3>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <input 
+                  placeholder="Post Title" 
+                  value={createForm.title} 
+                  onChange={e => handleTitleChange(e.target.value)}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px', 
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <input 
+                  placeholder="URL Slug (auto-generated)" 
+                  value={createForm.slug} 
+                  onChange={e => setCreateForm(f => ({ ...f, slug: e.target.value }))}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px', 
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem',
+                    backgroundColor: '#f8f9fa'
+                  }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <input 
+                  placeholder="Tags (comma-separated)" 
+                  value={createForm.tags.join(', ')} 
+                  onChange={e => setCreateForm(f => ({ 
+                    ...f, 
+                    tags: e.target.value.split(',').map(t => t.trim()).filter(t => t) 
+                  }))}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px', 
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={createForm.isPrivate} 
+                    onChange={e => setCreateForm(f => ({ ...f, isPrivate: e.target.checked }))}
+                  />
+                  <span>Private post</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={createForm.isDraft} 
+                    onChange={e => setCreateForm(f => ({ ...f, isDraft: e.target.checked }))}
+                  />
+                  <span>Save as draft</span>
+                </label>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <input 
+                  placeholder="Featured Image URL (optional)" 
+                  value={createForm.featuredImage} 
+                  onChange={e => setCreateForm(f => ({ ...f, featuredImage: e.target.value }))}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px', 
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem'
+                  }}
+                />
+                {createForm.featuredImage && (
+                  <div style={{ marginTop: '8px' }}>
+                    <img 
+                      src={createForm.featuredImage} 
+                      alt="Featured image preview" 
+                      style={{ 
+                        maxWidth: '200px', 
+                        maxHeight: '150px', 
+                        objectFit: 'cover', 
+                        borderRadius: '4px',
+                        border: '1px solid #dee2e6'
+                      }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
+                  Content
+                </label>
+                <div style={{ backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ced4da' }}>
+                  <ReactQuill
+                    value={createForm.content}
+                    onChange={value => setCreateForm(f => ({ ...f, content: value }))}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    style={{ minHeight: '200px' }}
+                    placeholder="Write your blog post content here..."
+                  />
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  onClick={() => handleCreatePost(true)}
+                  disabled={!createForm.title || !createForm.content || saving}
+                  style={{ 
+                    padding: '12px 20px', 
+                    backgroundColor: saving ? '#6c757d' : '#6c757d', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '4px',
+                    cursor: saving || (!createForm.title || !createForm.content) ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save Draft'}
+                </button>
+                
+                <button 
+                  onClick={() => handleCreatePost(false)}
+                  disabled={!createForm.title || !createForm.content || saving}
+                  style={{ 
+                    padding: '12px 20px', 
+                    backgroundColor: saving ? '#6c757d' : '#007bff', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '4px',
+                    cursor: saving || (!createForm.title || !createForm.content) ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {saving ? 'Publishing...' : 'Publish Post'}
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setCreateForm({ 
+                      title: '', 
+                      slug: '', 
+                      content: '', 
+                      tags: [], 
+                      isPrivate: false, 
+                      isDraft: true, 
+                      featuredImage: '' 
+                    });
+                  }}
+                  disabled={saving}
+                  style={{ 
+                    padding: '12px 20px', 
+                    backgroundColor: 'transparent', 
+                    color: '#6c757d', 
+                    border: '1px solid #6c757d', 
+                    borderRadius: '4px',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
@@ -210,6 +528,24 @@ export default function Blog() {
               <div className="empty-icon">✍️</div>
               <h3>No articles yet</h3>
               <p>I'm working on some great content. Check back soon!</p>
+              {userIsAdmin && (
+                <button 
+                  onClick={() => setShowCreateForm(true)}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                    marginTop: '1rem'
+                  }}
+                >
+                  ✏️ Create Your First Post
+                </button>
+              )}
             </div>
           )}
           
@@ -362,6 +698,204 @@ export default function Blog() {
           )}
         </div>
       </section>
+
+      {/* Admin Create Post Form - also shown when no posts exist */}
+      {userIsAdmin && showCreateForm && firestorePosts.length === 0 && (
+        <section className="create-post-form" style={{ backgroundColor: '#f8f9fa', padding: '2rem 0' }}>
+          <div className="container">
+            <div style={{ 
+              backgroundColor: 'white', 
+              padding: '2rem', 
+              borderRadius: '8px', 
+              border: '1px solid #dee2e6',
+              maxWidth: '800px',
+              margin: '0 auto'
+            }}>
+              <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#495057' }}>Create Your First Blog Post</h3>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <input 
+                  placeholder="Post Title" 
+                  value={createForm.title} 
+                  onChange={e => handleTitleChange(e.target.value)}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px', 
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <input 
+                  placeholder="URL Slug (auto-generated)" 
+                  value={createForm.slug} 
+                  onChange={e => setCreateForm(f => ({ ...f, slug: e.target.value }))}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px', 
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem',
+                    backgroundColor: '#f8f9fa'
+                  }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <input 
+                  placeholder="Tags (comma-separated)" 
+                  value={createForm.tags.join(', ')} 
+                  onChange={e => setCreateForm(f => ({ 
+                    ...f, 
+                    tags: e.target.value.split(',').map(t => t.trim()).filter(t => t) 
+                  }))}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px', 
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={createForm.isPrivate} 
+                    onChange={e => setCreateForm(f => ({ ...f, isPrivate: e.target.checked }))}
+                  />
+                  <span>Private post</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={createForm.isDraft} 
+                    onChange={e => setCreateForm(f => ({ ...f, isDraft: e.target.checked }))}
+                  />
+                  <span>Save as draft</span>
+                </label>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <input 
+                  placeholder="Featured Image URL (optional)" 
+                  value={createForm.featuredImage} 
+                  onChange={e => setCreateForm(f => ({ ...f, featuredImage: e.target.value }))}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px', 
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem'
+                  }}
+                />
+                {createForm.featuredImage && (
+                  <div style={{ marginTop: '8px' }}>
+                    <img 
+                      src={createForm.featuredImage} 
+                      alt="Featured image preview" 
+                      style={{ 
+                        maxWidth: '200px', 
+                        maxHeight: '150px', 
+                        objectFit: 'cover', 
+                        borderRadius: '4px',
+                        border: '1px solid #dee2e6'
+                      }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#495057' }}>
+                  Content
+                </label>
+                <div style={{ backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ced4da' }}>
+                  <ReactQuill
+                    value={createForm.content}
+                    onChange={value => setCreateForm(f => ({ ...f, content: value }))}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    style={{ minHeight: '200px' }}
+                    placeholder="Write your blog post content here..."
+                  />
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  onClick={() => handleCreatePost(true)}
+                  disabled={!createForm.title || !createForm.content || saving}
+                  style={{ 
+                    padding: '12px 20px', 
+                    backgroundColor: saving ? '#6c757d' : '#6c757d', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '4px',
+                    cursor: saving || (!createForm.title || !createForm.content) ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save Draft'}
+                </button>
+                
+                <button 
+                  onClick={() => handleCreatePost(false)}
+                  disabled={!createForm.title || !createForm.content || saving}
+                  style={{ 
+                    padding: '12px 20px', 
+                    backgroundColor: saving ? '#6c757d' : '#007bff', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '4px',
+                    cursor: saving || (!createForm.title || !createForm.content) ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {saving ? 'Publishing...' : 'Publish Post'}
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setCreateForm({ 
+                      title: '', 
+                      slug: '', 
+                      content: '', 
+                      tags: [], 
+                      isPrivate: false, 
+                      isDraft: true, 
+                      featuredImage: '' 
+                    });
+                  }}
+                  disabled={saving}
+                  style={{ 
+                    padding: '12px 20px', 
+                    backgroundColor: 'transparent', 
+                    color: '#6c757d', 
+                    border: '1px solid #6c757d', 
+                    borderRadius: '4px',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Blog Footer */}
       {!loading && !error && firestorePosts.length > 0 && !selectedFirestorePost && (
