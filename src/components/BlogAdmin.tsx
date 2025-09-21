@@ -88,9 +88,12 @@ export function BlogAdmin() {
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
+      // Preserve Korean characters (Hangul: U+AC00-U+D7AF), alphanumeric, spaces, and hyphens
+      .replace(/[^\uAC00-\uD7AFa-z0-9\s-]/g, '')
+      .trim()
       .replace(/\s+/g, '-')
-      .trim();
+      // Remove any leading/trailing hyphens
+      .replace(/^-+|-+$/g, '');
   };
 
   const handleTitleChange = (title: string) => {

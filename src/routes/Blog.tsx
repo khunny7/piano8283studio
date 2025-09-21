@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
@@ -138,9 +139,12 @@ export default function Blog() {
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
+      // Preserve Korean characters (Hangul: U+AC00-U+D7AF), alphanumeric, spaces, and hyphens
+      .replace(/[^\uAC00-\uD7AFa-z0-9\s-]/g, '')
+      .trim()
       .replace(/\s+/g, '-')
-      .trim();
+      // Remove any leading/trailing hyphens
+      .replace(/^-+|-+$/g, '');
   };
 
   const handleTitleChange = (title: string) => {
@@ -637,12 +641,13 @@ export default function Blog() {
                       <div className="card-content">
                         <header className="card-header">
                           <h2>
-                            <button 
-                              onClick={() => setSelectedFirestorePost(post)}
+                            <Link 
+                              to={`/blog/${encodeURIComponent(post.slug)}`}
                               className="article-title-link"
+                              style={{ textDecoration: 'none', color: 'inherit' }}
                             >
                               {post.title}
-                            </button>
+                            </Link>
                           </h2>
                           
                           <div className="card-meta">
@@ -687,6 +692,18 @@ export default function Blog() {
                             <span className="comment-count" style={{ marginLeft: '1rem' }}>
                               💬 {commentCounts[post.id!] || 0} comments
                             </span>
+                            <Link 
+                              to={`/blog/${encodeURIComponent(post.slug)}`}
+                              style={{ 
+                                marginLeft: '1rem',
+                                color: '#007bff',
+                                textDecoration: 'none',
+                                fontSize: '0.9rem',
+                                fontWeight: '500'
+                              }}
+                            >
+                              Read more →
+                            </Link>
                           </div>
                         </footer>
                       </div>
