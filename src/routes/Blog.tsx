@@ -628,86 +628,85 @@ export default function Blog() {
                 // Articles list view
                 <div className="articles-grid">
                   {filteredPosts.map(post => (
-                    <article key={post.id} className="article-card">
-                      {post.featuredImage && (
-                        <div className="card-featured-image">
-                          <img 
-                            src={post.featuredImage} 
-                            alt={post.title}
-                            style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-                          />
-                        </div>
-                      )}
-                      <div className="card-content">
-                        <header className="card-header">
-                          <h2>
-                            <Link 
-                              to={`/blog/${encodeURIComponent(post.slug)}`}
-                              className="article-title-link"
-                              style={{ textDecoration: 'none', color: 'inherit' }}
-                            >
+                    <Link 
+                      key={post.id} 
+                      to={`/blog/${encodeURIComponent(post.slug)}`}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                      className="article-card-link"
+                    >
+                      <article className="article-card">
+                        {post.featuredImage && (
+                          <div className="card-featured-image">
+                            <img 
+                              src={post.featuredImage} 
+                              alt={post.title}
+                              style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                            />
+                          </div>
+                        )}
+                        <div className="card-content">
+                          <header className="card-header">
+                            <h2 className="article-title">
                               {post.title}
-                            </Link>
-                          </h2>
-                          
-                          <div className="card-meta">
-                            <div className="author-info">
-                              {post.authorPhoto && (
-                                <img 
-                                  src={post.authorPhoto} 
-                                  alt={post.author}
-                                  className="author-photo-small"
-                                />
-                              )}
-                              <span className="author-name">{post.author}</span>
-                            </div>
-                            <span className="publish-date">
-                              {post.published ? formatDate(post.published) : 'Draft'}
-                            </span>
-                          </div>
-                        </header>
-                        
-                        <div className="card-excerpt">
-                          <p>
-                            {getTextExcerpt(post.content)}
-                          </p>
-                        </div>
-                        
-                        <footer className="card-footer">
-                          <div className="card-tags">
-                            {post.tags.slice(0, 3).map((tag, index) => (
-                              <span key={index} className="card-tag">
-                                {tag}
+                            </h2>
+                            
+                            <div className="card-meta">
+                              <div className="author-info">
+                                {post.authorPhoto && (
+                                  <img 
+                                    src={post.authorPhoto} 
+                                    alt={post.author}
+                                    className="author-photo-small"
+                                  />
+                                )}
+                                <span className="author-name">{post.author}</span>
+                              </div>
+                              <span className="publish-date">
+                                {post.published ? formatDate(post.published) : 'Draft'}
                               </span>
-                            ))}
-                            {post.tags.length > 3 && (
-                              <span className="more-tags">+{post.tags.length - 3}</span>
-                            )}
+                            </div>
+                          </header>
+                          
+                          <div className="card-excerpt">
+                            <p>
+                              {getTextExcerpt(post.content)}
+                            </p>
                           </div>
                           
-                          <div className="reading-info">
-                            <span className="reading-time">
-                              {readingTime(post.content)} min read
-                            </span>
-                            <span className="comment-count" style={{ marginLeft: '1rem' }}>
-                              💬 {commentCounts[post.id!] || 0} comments
-                            </span>
-                            <Link 
-                              to={`/blog/${encodeURIComponent(post.slug)}`}
-                              style={{ 
-                                marginLeft: '1rem',
-                                color: '#007bff',
-                                textDecoration: 'none',
-                                fontSize: '0.9rem',
-                                fontWeight: '500'
-                              }}
-                            >
-                              Read more →
-                            </Link>
-                          </div>
-                        </footer>
-                      </div>
-                    </article>
+                          <footer className="card-footer">
+                            <div className="card-tags">
+                              {post.tags.slice(0, 3).map((tag, index) => (
+                                <span key={index} className="card-tag">
+                                  {tag}
+                                </span>
+                              ))}
+                              {post.tags.length > 3 && (
+                                <span className="more-tags">+{post.tags.length - 3}</span>
+                              )}
+                            </div>
+                            
+                            <div className="reading-info">
+                              <span className="reading-time">
+                                {readingTime(post.content)} min read
+                              </span>
+                              <span className="comment-count" style={{ marginLeft: '1rem' }}>
+                                💬 {commentCounts[post.id!] || 0} comments
+                              </span>
+                              <span 
+                                style={{ 
+                                  marginLeft: '1rem',
+                                  color: '#007bff',
+                                  fontSize: '0.9rem',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                Read more →
+                              </span>
+                            </div>
+                          </footer>
+                        </div>
+                      </article>
+                    </Link>
                   ))}
                 </div>
               )}

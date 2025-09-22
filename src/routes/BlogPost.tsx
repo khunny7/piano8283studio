@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import { BlogPost as BlogPostType } from '../types';
 import { formatDate } from '../utils/formatDate';
 import { Comments } from '../components/Comments';
+import { demoBlogPost } from '../data/demoBlogPost';
 import DOMPurify from 'dompurify';
 
 export default function BlogPost() {
@@ -23,9 +24,19 @@ export default function BlogPost() {
       }
 
       try {
+        const decodedSlug = decodeURIComponent(slug);
+        
+        // First check if this is the demo post
+        if (demoBlogPost.slug === decodedSlug) {
+          setPost(demoBlogPost);
+          setLoading(false);
+          return;
+        }
+
+        // If not demo post, query Firestore
         const q = query(
           collection(db, 'blogPosts'),
-          where('slug', '==', decodeURIComponent(slug))
+          where('slug', '==', decodedSlug)
         );
         const snapshot = await getDocs(q);
         
