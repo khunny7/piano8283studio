@@ -1860,12 +1860,39 @@ button:focus {
   box-shadow: var(--shadow-lg);
 }
 
+/* Clickable card link wrapper */
+.article-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-normal);
+}
+
+.article-card-link:hover .article-card {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.article-card-link:hover .article-title {
+  color: var(--accent);
+}
+
 .card-content {
   padding: var(--space-6);
 }
 
 .card-header {
   margin-bottom: var(--space-4);
+}
+
+.article-title {
+  color: var(--text-primary);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  line-height: 1.3;
+  transition: color var(--transition-fast);
+  margin: 0;
+  margin-bottom: var(--space-3);
 }
 
 .article-title-link {
