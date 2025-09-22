@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import Home from './routes/Home';
 import Portfolio from './routes/Portfolio';
 import Blog from './routes/Blog';
+import BlogPost from './routes/BlogPost';
 import Admin from './routes/Admin';
 import NotFound from './routes/NotFound';
 import { ThemeToggle } from './components/layout/ThemeToggle';
@@ -68,6 +69,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
